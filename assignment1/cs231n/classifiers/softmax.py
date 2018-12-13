@@ -1,5 +1,6 @@
 import numpy as np
 from random import shuffle
+from tqdm import tqdm_notebook as tqdm
 
 def softmax_loss_naive(W, X, y, reg):
     """
