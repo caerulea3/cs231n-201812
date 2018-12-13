@@ -63,7 +63,7 @@ class KNearestNeighbor(object):
     num_test = X.shape[0]
     num_train = self.X_train.shape[0]
     dists = np.zeros((num_test, num_train))
-    for i in range(num_test):
+    for i in tqdm(range(num_test)):
       for j in range(num_train):
         #####################################################################
         # TODO:                                                             #
@@ -71,7 +71,7 @@ class KNearestNeighbor(object):
         # training point, and store the result in dists[i, j]. You should   #
         # not use a loop over dimension.                                    #
         #####################################################################
-        dists[i, j] = np.sum ( np.abs(X[i] - self.X_train[j]) )
+        dists[i, j] = np.sum ( (X[i] - self.X_train[j]) **2 )
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -93,7 +93,7 @@ class KNearestNeighbor(object):
         # Compute the l2 distance between the ith test point and all training #
         # points, and store the result in dists[i, :].                        #
         #######################################################################
-        dists[i] = (np.abs( X[i] - self.X_train).sum(axis=1))
+        dists[i] = ( (X[i] - self.X_train)**2 ).sum(axis=1)
         #######################################################################
         #                         END OF YOUR CODE                            #
         #######################################################################
@@ -122,13 +122,10 @@ class KNearestNeighbor(object):
         # HINT: Try to formulate the l2 distance using matrix multiplication    #
         #       and two broadcast sums.                                         #
         #########################################################################
-        for batch in tqdm(range((num_test//10)+1)):
-            newX=X[batch*100:(batch+1)*100]
-            newX=newX.reshape(newX.shape[0], 1, newX.shape[1])
-            newtrain=self.X_train.reshape(1, self.X_train.shape[0], self.X_train.shape[1])
-            print(newX.shape, newtrain.shape)
-            dists=abs(newX - newtrain).sum(axis=2)
-        
+        x1 = (X**2).sum(axis=1, keepdims = True)
+        x2 = - 2 * np.dot(X, self.X_train.T)
+        x3 = (self.X_train **2).sum(axis=1)
+        dists = x1 + x2 + x3
         #########################################################################
         #                         END OF YOUR CODE                              #
         #########################################################################
@@ -160,7 +157,7 @@ class KNearestNeighbor(object):
         # neighbors. Store these labels in closest_y.                           #
         # Hint: Look up the function numpy.argsort.                             #
         #########################################################################
-        closest_y=np.argsort(dists[i])[:k]
+        closest_y=self.y_train[np.argsort(dists[i])[:k]]
         #########################################################################
         # TODO:                                                                 #
         # Now that you have found the labels of the k nearest neighbors, you    #
@@ -168,7 +165,7 @@ class KNearestNeighbor(object):
         # Store this label in y_pred[i]. Break ties by choosing the smaller     #
         # label.                                                                #
         #########################################################################
-        y_pred[i] = self.y_train[np.bincount(closest_y).argmax()]
+        y_pred[i] = np.bincount(closest_y).argmax()
         #########################################################################
         #                           END OF YOUR CODE                            # 
         #########################################################################
