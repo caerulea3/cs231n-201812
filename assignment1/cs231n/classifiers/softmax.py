@@ -34,6 +34,8 @@ def softmax_loss_naive(W, X, y, reg):
     for i in tqdm(range(X.shape[0])):
         this = np.exp( expect[i] - expect[i].max() ) 
         dW[i] = this[y[i]] / this.sum()
+        if i<10:
+            print(this, dW[i])
 
     #############################################################################
     #                          END OF YOUR CODE                                 #
