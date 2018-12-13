@@ -31,11 +31,16 @@ def softmax_loss_naive(W, X, y, reg):
     # regularization!                                                           #
     #############################################################################
     expect = np.dot(X, W)
-    for i in tqdm(range(X.shape[0])):
-        this = np.exp( expect[i] - expect[i].max() ) 
-        dW[i] = this[y[i]] / this.sum()
-        if i<10:
-            print(this, dW[i])
+    print(expect.shape)
+    batchlen=X.shape[0]
+    for i in tqdm(range(batchlen)):
+        this = np.exp(expect[i] - expect[i].max()) 
+        sm = this / this.sum()
+        loss += - np.log (sm[y[i]]) / batchlen
+        
+    loss += np.sum(W**2) * reg
+    
+    
 
     #############################################################################
     #                          END OF YOUR CODE                                 #
