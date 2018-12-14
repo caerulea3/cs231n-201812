@@ -1,6 +1,7 @@
 import numpy as np
 from random import shuffle
 from tqdm import tqdm_notebook as tqdm
+from copy import deepcopy as deepcopy
 
 def softmax_loss_naive(W, X, y, reg):
     """
@@ -31,17 +32,20 @@ def softmax_loss_naive(W, X, y, reg):
     # regularization!                                                           #
     #############################################################################
     expect = np.dot(X, W)
-    print(expect.shape)
     batchlen=X.shape[0]
-    for i in tqdm(range(batchlen)):
+    h=0.0001
+    for i in range(batchlen):
         this = np.exp(expect[i] - expect[i].max()) 
         sm = this / this.sum()
         loss += - np.log (sm[y[i]]) / batchlen
+
+    old_W = W.deepcopy()
+    new_W = W.deepcopy() + h
+
+    dW = np.dot(X, new_W) - np.dot(X, old_W) 
+    dW /= h
         
     loss += np.sum(W**2) * reg
-    
-    
-
     #############################################################################
     #                          END OF YOUR CODE                                 #
     #############################################################################
