@@ -38,17 +38,18 @@ def softmax_loss_naive(W, X, y, reg):
         this = np.exp(expect[i] - expect[i].max()) 
         sm = this / this.sum()
         loss += - np.log (sm[y[i]]) / batchlen
+    print(W[0])
 
-    for i in tqdm(range(W.shape[0])):
+    for i in tqdm(range(W.shape[0])).set_description("softmax_loss_naiveloop"):
         for j in range(W.shape[1]):
             new_W = deepcopy(W)
             new_W[i, j] += h
             newloss=0
             newexp = np.dot(X, new_W)
             for k in range(batchlen):
-                this = np.exp(newexp[i] - newexp[i].max()) 
+                this = np.exp(newexp[k] - newexp[k].max()) 
                 sm = this / this.sum()
-                newloss += - np.log (sm[y[i]]) / batchlen
+                newloss += - np.log (sm[y[k]]) / batchlen
             dW[i, j] = newloss
         
     loss += np.sum(W**2) * reg
