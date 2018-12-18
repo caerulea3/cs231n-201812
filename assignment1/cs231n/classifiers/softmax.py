@@ -30,17 +30,15 @@ def softmax_loss_naive(W, X, y, reg):
     # Store the loss in loss and the gradient in dW. If you are not careful     #
     # here, it is easy to run into numeric instability. Don't forget the        #
     # regularization!                                                           #
-    #############################################################################
-    expect = np.dot(X, W)
+    
+    expect = np.dot(X, W)
     batchlen=X.shape[0]
     h=0.0001
     for i in range(batchlen):
         this = np.exp(expect[i] - expect[i].max()) 
         sm = this / this.sum()
-        loss += - np.log (sm[y[i]]) / batchlen
-    print(W[0])
-
-    for i in tqdm(range(W.shape[0]), desc = "softmax_loss_naiveloop"):
+        loss += - np.log (sm[y[i]]) / batchlen
+    for i in tqdm(range(W.shape[0])):
         for j in range(W.shape[1]):
             new_W = deepcopy(W)
             new_W[i, j] += h
