@@ -14,7 +14,7 @@ def softmax_loss_naive(W, X, y, reg):
     - W: A numpy array of shape (D, C) containing weights.
     - X: A numpy array of shape (N, D) containing a minibatch of data.
     - y: A numpy array of shape (N,) containing training labels; y[i] = c means
-        that X[i] has label c, where 0 <= c < C.
+          that X[i] has label c, where 0 <= c < C.
     - reg: (float) regularization strength
 
     Returns a tuple of:
@@ -26,60 +26,60 @@ def softmax_loss_naive(W, X, y, reg):
     dW = np.zeros_like(W)
 
     #############################################################################
-    # TODO: Compute the softmax loss and its gradient using explicit loops.     #
-    # Store the loss in loss and the gradient in dW. If you are not careful     #
-    # here, it is easy to run into numeric instability. Don't forget the        #
-    # regularization!                                                           #
+    # TODO: Compute the softmax loss and its gradient using explicit loops.      #
+    # Store the loss in loss and the gradient in dW. If you are not careful      #
+    # here, it is easy to run into numeric instability. Don't forget the         #
+    # regularization!                                                            #
     #############################################################################
     expect = np.dot(X, W)
     batchlen=X.shape[0]
     h=0.0001
     for i in range(batchlen):
-        this = np.exp(expect[i] - expect[i].max()) 
-        sm = this / this.sum()
-        loss += - np.log (sm[y[i]]) / batchlen
+          this = np.exp(expect[i] - expect[i].max()) 
+          sm = this / this.sum()
+          loss += - np.log (sm[y[i]]) / batchlen
     print(W[0])
 
     for i in tqdm(range(W.shape[0]), desc = "softmax_loss_naiveloop"):
-        for j in range(W.shape[1]):
-            new_W = deepcopy(W)
-            new_W[i, j] += h
-            newloss=0
-            newexp = np.dot(X, new_W)
-            for k in range(batchlen):
-                this = np.exp(newexp[k] - newexp[k].max()) 
-                sm = this / this.sum()
-                newloss += - np.log (sm[y[k]]) / batchlen
-            dW[i, j] = newloss
-        
+          for j in range(W.shape[1]):
+              new_W = deepcopy(W[i])
+              new_W[j] += h
+              newloss=0
+              newexp = np.dot(X, new_W)
+              for k in range(batchlen):
+                    this = np.exp(newexp[k] - newexp[k].max()) 
+                    sm = this / this.sum()
+                    newloss += - np.log (sm[y[k]]) / batchlen
+              dW[i, j] = newloss
+
     loss += np.sum(W**2) * reg
     #############################################################################
-    #                          END OF YOUR CODE                                 #
+    #                           END OF YOUR CODE                                #
     #############################################################################
 
     return loss, dW
 
 
 def softmax_loss_vectorized(W, X, y, reg):
-  """
-  Softmax loss function, vectorized version.
+    """
+    Softmax loss function, vectorized version.
 
-  Inputs and outputs are the same as softmax_loss_naive.
-  """
-  # Initialize the loss and gradient to zero.
-  loss = 0.0
-  dW = np.zeros_like(W)
+    Inputs and outputs are the same as softmax_loss_naive.
+    """
+    # Initialize the loss and gradient to zero.
+    loss = 0.0
+    dW = np.zeros_like(W)
 
-  #############################################################################
-  # TODO: Compute the softmax loss and its gradient using no explicit loops.  #
-  # Store the loss in loss and the gradient in dW. If you are not careful     #
-  # here, it is easy to run into numeric instability. Don't forget the        #
-  # regularization!                                                           #
-  #############################################################################
-  pass
-  #############################################################################
-  #                          END OF YOUR CODE                                 #
-  #############################################################################
+    #############################################################################
+    # TODO: Compute the softmax loss and its gradient using no explicit loops.  #
+    # Store the loss in loss and the gradient in dW. If you are not careful     #
+    # here, it is easy to run into numeric instability. Don't forget the        #
+    # regularization!                                                           #
+    #############################################################################
+    pass
+    #############################################################################
+    #                           END OF YOUR CODE                                #
+    #############################################################################
 
-  return loss, dW
+    return loss, dW
 
