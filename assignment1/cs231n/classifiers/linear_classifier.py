@@ -3,6 +3,7 @@ from __future__ import print_function
 import numpy as np
 from cs231n.classifiers.linear_svm import *
 from cs231n.classifiers.softmax import *
+from tqdm import tqdm_notebook as tqdm
 
 class LinearClassifier(object):
 
@@ -36,7 +37,7 @@ class LinearClassifier(object):
 
         # Run stochastic gradient descent to optimize W
         loss_history = []
-        for it in range(num_iters):
+        for it in tqdm(range(num_iters)):
             X_batch = None
             y_batch = None
 
