@@ -32,28 +32,21 @@ def softmax_loss_naive(W, X, y, reg, verbose=False):
     # regularization!                                                            #
     #############################################################################
     scores = np.dot(X, W)
-    print(scores.shape)
     train_num=X.shape[0]
-    img_size = X.shape[1]
     category_num = W.shape[1]
     
     for i in range(train_num):
         score_exp = np.exp(scores[i] - scores[i].max()) 
         score_exp_sum = score_exp.sum()
         softmax = score_exp / score_exp_sum
-        loss += - np.log (softmax[y[i]]) / train_num    
-    loss += np.sum(W**2) * reg
-    
-    for i in range(img_size) if not verbose else tqdm(range(img_size)):
-        score = scores[i]
-        score_exp = np.exp(scores[i] - scores[i].max())
-        score_exp_sum = score_exp.sum()
-        softmax = score_exp / score_exp_sum
+        loss += - np.log (softmax[y[i]]) / train_num
         for j in range(category_num):
             if j == y[i]:
-                dW[i, j] = score[j] * ((score_exp[j] / score_exp_sum) - 1)
+                dW[:,y[i]] += scores[i, j] * (softmax[y[i]]-1)
             else:
-                dW[i, j] = -1 * score_exp[j] * X[i, j] / softmax[y[i]]
+                dW[:,j] += -1 * score_exp[j] * X[j] / softmax[y[i]]
+    dW /= train_num
+    loss += np.sum(W**2) * reg
     #############################################################################
     #                           END OF YOUR CODE                                #
     #############################################################################
