@@ -45,7 +45,7 @@ def softmax_loss_naive(W, X, y, reg, verbose=False):
     iter_array = [(i, j) for i in train_num for j in img_size]
     iteration_verbose = tqdm(iter_array) if verbose else iter_array
     for i, j in iteration_verbose:
-        if j = y[i]:
+        if j == y[i]:
             dW[i, j] = scores[i, j] * (score_exp[i, j] / score_exp_sum[i] - 1)
         else:
             dw[i, j] = -1 * scores[i, j] * X[i, j] / softmax[i]
