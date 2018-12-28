@@ -3,7 +3,7 @@ from random import shuffle
 from tqdm import tqdm_notebook as tqdm
 from copy import deepcopy as deepcopy
 
-def softmax_loss_naive(W, X, y, reg):
+def softmax_loss_naive(W, X, y, reg, verbose=False):
     """
     Softmax loss function, naive implementation (with loops)
 
@@ -31,21 +31,24 @@ def softmax_loss_naive(W, X, y, reg):
     # here, it is easy to run into numeric instability. Don't forget the         #
     # regularization!                                                            #
     #############################################################################
-    expect = np.dot(X, W)
-    batchlen=X.shape[0]
-    h=0.0001
-    for i in range(batchlen):
-        this = np.exp(expect[i] - expect[i].max()) 
-        sm = this / this.sum()
-        loss += - np.log (sm[y[i]]) / batchlen
+    scores = np.dot(X, W)
+    train_num=X.shape[0]
+    category_num = W.shape[1]
+    for i in range(train_num):
+        #Get scores with regularizations
+        score_exp = np.exp(scores[i] - scores[i].max()) 
+        score_exp_sum = score_exp.sum()
+        softmax = score_exp / score_exp_sum
+        loss += - np.log (softmax[y[i]]) / train_num
 
-    for i in range(W.shape[1]):
-        this_W = deepcopy(W[:,i])
-        old_WX = X.W[:,i]
-        for j in range(W.shape[0]):
-            this_W[j] += h
-            dW[j, i] = X.this_W - old_WX
-                
+    iter_array = [(i, j) for i in W.shape[0] for j in W.shape[1]]
+    iteration_verbose = tqdm(iter_array) if verbose else iter_array
+    for i, j in iteration_verbose:
+        if j = y[i]:
+            dW[i, j] = scores[i, j] * (score_exp[i, j] / score_exp_sum[i] - 1)
+        else:
+            dw[i, j] = -1 * scores[i, j] * X[i, j] / softmax[i]
+        
     loss += np.sum(W**2) * reg
     #############################################################################
     #                           END OF YOUR CODE                                #
