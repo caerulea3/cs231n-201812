@@ -19,6 +19,40 @@ def svm_loss_naive(W, X, y, reg):
     - loss as single float
     - gradient with respect to weights W; an array of same shape as W
     """
+
+    """Sample Codes"""
+    # dW = np.zeros(W.shape) # initialize the gradient as zero
+
+    # # compute the loss and the gradient
+    # num_classes = W.shape[1]
+    # num_train = X.shape[0]
+    # loss = 0.0
+    # for i in range(num_train):
+    #     scores = X[i].dot(W)
+    #     correct_class_score = scores[y[i]]
+    #     for j in range(num_classes):
+    #         if j == y[i]:
+    #             continue
+    #         margin = scores[j] - correct_class_score + 1 # note delta = 1
+    #         if margin > 0:
+    #             loss += margin
+
+    # # Right now the loss is a sum over all training examples, but we want it
+    # # to be an average instead so we divide by num_train.
+    # loss /= num_train
+
+    # # Add regularization to the loss.
+    # loss += reg * np.sum(W * W)
+
+    #############################################################################
+    # TODO:                                                                      #
+    # Compute the gradient of the loss function and store it dW.                 #
+    # Rather that first computing the loss and then computing the derivative,    #
+    # it may be simpler to compute the derivative at the same time that the      #
+    # loss is being computed. As a result you may need to modify some of the     #
+    # code above to compute the gradient.                                        #
+    #############################################################################
+
     dW = np.zeros(W.shape) # initialize the gradient as zero
 
     # compute the loss and the gradient
@@ -34,24 +68,16 @@ def svm_loss_naive(W, X, y, reg):
             margin = scores[j] - correct_class_score + 1 # note delta = 1
             if margin > 0:
                 loss += margin
+                dW[:, y[i]] -= X[i, :]
+                dW[:,j] += X[i, :]
 
     # Right now the loss is a sum over all training examples, but we want it
     # to be an average instead so we divide by num_train.
     loss /= num_train
+    dW /= num_train
 
     # Add regularization to the loss.
     loss += reg * np.sum(W * W)
-
-    #############################################################################
-    # TODO:                                                                      #
-    # Compute the gradient of the loss function and store it dW.                 #
-    # Rather that first computing the loss and then computing the derivative,    #
-    # it may be simpler to compute the derivative at the same time that the      #
-    # loss is being computed. As a result you may need to modify some of the     #
-    # code above to compute the gradient.                                        #
-    #############################################################################
-
-
     return loss, dW
 
 
@@ -69,7 +95,21 @@ def svm_loss_vectorized(W, X, y, reg):
     # Implement a vectorized version of the structured SVM loss, storing the     #
     # result in loss.                                                            #
     #############################################################################
-    pass
+    num_train = X.shape[0]
+    num_category = W.shape[1]
+    scores = np.dot(X, W)
+    scores_right = scores[np.arange(num_train),y]
+
+    margins = scores.T - scores_right
+    margins = margins.T
+    margins+=1
+
+    margins = np.maximum(margins, 0)
+    margins[np.arange(num_train), y] = 0
+    
+    loss = np.sum(margins) / num_train
+    loss += reg * np.sum(W * W)
+
     #############################################################################
     #                               END OF YOUR CODE                                                                   #
     #############################################################################
@@ -84,7 +124,17 @@ def svm_loss_vectorized(W, X, y, reg):
     # to reuse some of the intermediate values that you used to compute the      #
     # loss.                                                                      #
     #############################################################################
-    pass
+    margin_bool = np.zeros(margins.shape)
+    margin_bool[margins > 0] = 1
+    margin_bool[np.arange(num_train), y] = 0
+    margin_bool[np.arange(num_train), y] = -1 * np.sum(margin_bool, axis = 1)
+        
+    dW = np.dot(X.T, margin_bool)
+
+    # Average over number of training examples
+    num_train = X.shape[1]
+
+    
     #############################################################################
     #                               END OF YOUR CODE                                                                   #
     #############################################################################
