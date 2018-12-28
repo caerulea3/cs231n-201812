@@ -130,9 +130,7 @@ def svm_loss_vectorized(W, X, y, reg):
     margin_bool[np.arange(num_train), y] = -1 * np.sum(margin_bool, axis = 1)
         
     dW = np.dot(X.T, margin_bool)
-
-    # Average over number of training examples
-    num_train = X.shape[1]
+    dW/=num_train
 
     
     #############################################################################
