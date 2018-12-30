@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import numpy as np
 import matplotlib.pyplot as plt
+from copy import deepcopy as deepcopy
 
 class TwoLayerNet(object):
   """
@@ -114,7 +115,33 @@ class TwoLayerNet(object):
     # and biases. Store the results in the grads dictionary. For example,       #
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
-    pass
+    grads['W1'] = np.zeros_like(W1) + 2 * reg * np.sum(W1)
+    grads['W2'] = np.zeros_like(W2) + 2 * reg * np.sum(W2)
+    grads['b1'] = np.zeros_like(b1)
+    grads['b2'] = np.zeros_like(b2)
+
+    d_sm_s = 1
+    dh2s = d_sm_s
+
+    todot = deepcopy(np.broadcast_to(softmax, (N, D)))
+    todot[range(N), y] -= 1
+    dh2s = np.zeros_like(hidden_2_score)
+    dh2s+= np.dot(X.T, todot)
+    dh2s /= N
+    
+    grads['b2'] += dh2s
+    d_Relu_W2 = dh2s
+
+    grads['W2'] += np.dot(ReLu_score.T, d_Relu_W2)
+    dReLu = np.dot(d_Relu_W2, W2.T)
+
+    dh1s = dReLu[hidden_1_score>=0]
+
+    grads['b1'] = dh1s
+    d_W1_X = dh1s
+
+    grads['W1'] += np.dot(X.T, d_W1_X)
+
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
