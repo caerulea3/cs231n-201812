@@ -102,7 +102,7 @@ class TwoLayerNet(object):
     softmax = scores_exp / scores_exp_sum.reshape(scores_exp_sum.size, 1)
     
     loss = -np.sum(np.log(softmax[range(N), y]) / N)
-    loss += np.sum(W1**2) + np.sum(W2**2)
+    loss += reg * np.sum(W1**2) + reg * np.sum(W2**2)
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
