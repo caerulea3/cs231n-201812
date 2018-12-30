@@ -121,28 +121,6 @@ class TwoLayerNet(object):
     grads['b1'] = np.zeros_like(b1)
     grads['b2'] = np.zeros_like(b2)
 
-    d_sm_s = 1
-    d_exp_h2s = d_sm_s
-
-    d_exp_h2s = np.broadcast(softmax[range(N), y].reshape(N, 1), (N, C))
-    d_exp_h2s[range(N), y] = np.reciprocal(scores_exp_sum)
-    d_exp_h2s[range(N), y] -= np.reciprocal(scores_exp[range(N), y])
-
-    dh2s = d_exp_h2s * scores_exp
-    
-    grads['b2'] += dh2s
-    d_Relu_W2 = dh2s
-
-    grads['W2'] += np.dot(ReLu_score.T, d_Relu_W2)
-    dReLu = np.dot(d_Relu_W2, W2.T)
-
-    dh1s = dReLu[hidden_1_score>=0]
-
-    grads['b1'] = dh1s
-    d_W1_X = dh1s
-
-    grads['W1'] += np.dot(X.T, d_W1_X)
-
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
