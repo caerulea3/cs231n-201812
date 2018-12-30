@@ -125,10 +125,10 @@ class TwoLayerNet(object):
     d_exp_h2s = d_sm_s
 
     d_exp_h2s = np.broadcast(softmax[range(N), y].reshape(N, 1), (N, C))
-    d_exp_h2s[range(N), y] = scores_exp_sum ** -1 
-    d_exp_h2s[range(N), y] -= scores_exp[range(N), y] ** -1
+    d_exp_h2s[range(N), y] = np.reciprocal(scores_exp_sum)
+    d_exp_h2s[range(N), y] -= np.reciprocal(scores_exp[range(N), y])
 
-    d_h2s = d_exp_h2s * scores_exp
+    dh2s = d_exp_h2s * scores_exp
     
     grads['b2'] += dh2s
     d_Relu_W2 = dh2s
