@@ -75,7 +75,9 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    pass
+    hidden_score = np.dot(X, W1) + b1
+    result_score = np.dot(hidden_score, W2) + b2
+    scores = result_score
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
