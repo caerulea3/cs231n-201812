@@ -122,13 +122,13 @@ class TwoLayerNet(object):
     grads['b2'] = np.zeros_like(b2)
 
     d_sm_s = 1
-    dh2s = d_sm_s
+    d_exp_h2s = d_sm_s
 
-    todot = deepcopy(np.broadcast_to(softmax, (N, C)))
-    todot[range(N), y] -= 1
-    dh2s = np.zeros_like(hidden_2_score)
-    dh2s+= np.dot(hidden_2_score.T, todot)
-    dh2s /= N
+    d_exp_h2s = np.broadcast(softmax[range(N), y].reshape(N, 1), (N, C))
+    d_exp_h2s[range(N), y] = scores_exp_sum ** -1 
+    d_exp_h2s[range(N), y] -= scores_exp[range(N), y] ** -1
+
+    d_h2s = d_exp_h2s * scores_exp
     
     grads['b2'] += dh2s
     d_Relu_W2 = dh2s
