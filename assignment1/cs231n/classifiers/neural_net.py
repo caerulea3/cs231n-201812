@@ -68,6 +68,7 @@ class TwoLayerNet(object):
     W1, b1 = self.params['W1'], self.params['b1']
     W2, b2 = self.params['W2'], self.params['b2']
     N, D = X.shape
+    C = W2.shape[1]
 
     # Compute the forward pass
     scores = None
@@ -123,7 +124,7 @@ class TwoLayerNet(object):
     d_sm_s = 1
     dh2s = d_sm_s
 
-    todot = deepcopy(softmax)
+    todot = deepcopy(np.broadcast_to(softmax, (N, C)))
     todot[range(N), y] -= 1
     dh2s = np.zeros_like(hidden_2_score)
     dh2s+= np.dot(X.T, todot)
