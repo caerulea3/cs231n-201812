@@ -127,7 +127,7 @@ class TwoLayerNet(object):
     todot = deepcopy(np.broadcast_to(softmax, (N, C)))
     todot[range(N), y] -= 1
     dh2s = np.zeros_like(hidden_2_score)
-    dh2s+= np.dot(X.T, todot)
+    dh2s+= np.dot(hidden_2_score.T, todot)
     dh2s /= N
     
     grads['b2'] += dh2s
