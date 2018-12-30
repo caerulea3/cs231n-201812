@@ -42,11 +42,14 @@ def softmax_loss_naive(W, X, y, reg, verbose=False):
         loss += - np.log (softmax[y[i]]) / train_num
         for j in range(category_num):
             if j == y[i]:
-                dW[:,y[i]] += scores[i, j] * (softmax[y[i]]-1)
+                dW[:,j] += (score_exp[j] * X[i]) / score_exp_sum
+                dW[:,j] -= X[i]
             else:
-                dW[:,j] += -1 * score_exp[j] * X[j] / softmax[y[i]]
+                dW[:,j] += (score_exp[j] * X[i]) / score_exp_sum
     dW /= train_num
+
     loss += np.sum(W**2) * reg
+    dW += 2 * reg * W
     #############################################################################
     #                           END OF YOUR CODE                                #
     #############################################################################
@@ -70,7 +73,22 @@ def softmax_loss_vectorized(W, X, y, reg):
     # here, it is easy to run into numeric instability. Don't forget the        #
     # regularization!                                                           #
     #############################################################################
-    pass
+    scores = np.dot(X, W)
+    train_num=X.shape[0]
+    category_num = W.shape[1]
+    
+    scores_exp = np.exp(scores - scores.max())
+    scores_exp_sum = np.sum(scores_exp, axis = 1)
+    softmax = scores_exp / scores_exp_sum.reshape(scores_exp_sum.size, 1)
+    
+    loss -= np.sum(np.log(softmax[np.arange(train_num), y]) / train_num)
+
+    todot = deepcopy(np.broadcast_to(softmax, (train_num, category_num)))
+    todot[range(train_num), y] -= 1
+    dW+= np.dot(X.T, todot)
+    dW /= train_num
+   
+    dW += reg * W
     #############################################################################
     #                           END OF YOUR CODE                                #
     #############################################################################

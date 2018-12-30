@@ -120,8 +120,7 @@ class LinearClassifier(object):
         - loss as a single float
         - gradient with respect to self.W; an array of the same shape as W
         """
-        return svm_loss_vectorized(self.W, X_batch, y_batch, reg)
-
+        return None
 
 class LinearSVM(LinearClassifier):
     """ A subclass that uses the Multiclass SVM loss function """
