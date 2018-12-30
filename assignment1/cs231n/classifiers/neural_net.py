@@ -77,7 +77,7 @@ class TwoLayerNet(object):
     #############################################################################
     hidden_1_score = np.dot(X, W1) + b1
     ReLu_score = np.maximum(hidden_1_score, np.zeros_like(hidden_1_score))
-    hidden_2_score = np.dot(hidden_score, W2) + b2
+    hidden_2_score = np.dot(ReLu_score, W2) + b2
 
     scores = hidden_2_score
     #############################################################################
