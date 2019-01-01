@@ -77,9 +77,11 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    hidden_1_score = np.dot(X, W1) + b1
+    hidden_1_dot = np.dot(X, W1) 
+    hidden_1_score = hidden_1_dot + b1
     ReLu_score = np.maximum(hidden_1_score, np.zeros_like(hidden_1_score))
-    hidden_2_score = np.dot(ReLu_score, W2) + b2
+    hidden_2_dot = np.dot(ReLu_score, W2) 
+    hidden_2_score = hidden_2_dot + b2
 
     scores = hidden_2_score
     #############################################################################
@@ -116,10 +118,28 @@ class TwoLayerNet(object):
     # and biases. Store the results in the grads dictionary. For example,       #
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
-    grads['W1'] = np.zeros_like(W1) + 2 * reg * np.sum(W1)
-    grads['W2'] = np.zeros_like(W2) + 2 * reg * np.sum(W2)
-    grads['b1'] = np.zeros_like(b1)
-    grads['b2'] = np.zeros_like(b2)
+    dH2S = softmax
+    dH2S[np.arange(N), y] -= 1
+    dH2S /= N
+
+    #Backward : 2layer
+    ##2nd layer
+    grads['b2'] = np.sum(dH2S, axis = 0)
+    dH2D = dH2S
+    grads['W2'] = np.dot(ReLu_score.T, dH2S)
+    dReLu = np.dot(dH2D, W2.T)
+    
+    ##Relu Layer
+    dH1S = np.zeros_like(hidden_1_score)
+    dH1S[hidden_1_score>=0] = dReLu[hidden_1_score>=0]
+
+    ##1st layer
+    grads['b1'] = np.sum(dH1S, axis = 0)
+    dH1D = dH1S
+    grads['W1'] = np.dot(X.T, dH1S)
+
+    grads['W1'] += 2 * reg * W1
+    grads['W2'] += 2 * reg * W2
 
     #############################################################################
     #                              END OF YOUR CODE                             #
@@ -164,7 +184,9 @@ class TwoLayerNet(object):
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
-      pass
+      batch_index = np.random.choice(np.arange(num_train), batch_size)
+      X_batch = X[batch_index]
+      y_batch = y[batch_index]
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -179,7 +201,10 @@ class TwoLayerNet(object):
       # using stochastic gradient descent. You'll need to use the gradients   #
       # stored in the grads dictionary defined above.                         #
       #########################################################################
-      pass
+      self.params['W1'] -= grads['W1'] * learning_rate
+      self.params['W2'] -= grads['W2'] * learning_rate
+      self.params['b1'] -= grads['b1'] * learning_rate
+      self.params['b2'] -= grads['b2'] * learning_rate
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -224,7 +249,18 @@ class TwoLayerNet(object):
     ###########################################################################
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
-    pass
+    W1, b1 = self.params['W1'], self.params['b1']
+    W2, b2 = self.params['W2'], self.params['b2']
+
+    hidden_1_dot = np.dot(X, W1) 
+    hidden_1_score = hidden_1_dot + b1
+    ReLu_score = np.maximum(hidden_1_score, np.zeros_like(hidden_1_score))
+    hidden_2_dot = np.dot(ReLu_score, W2) 
+    hidden_2_score = hidden_2_dot + b2
+
+    scores = hidden_2_score
+
+    y_pred = np.argmax(scores, axis = 1)
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################
