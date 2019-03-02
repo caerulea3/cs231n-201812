@@ -278,9 +278,15 @@ class FullyConnectedNet(object):
                 drop_out, caches['drop'+str(i)] = dropout_forward(relu_out, self.dropout_param)
                 prev_out = drop_out
 <<<<<<< HEAD
+<<<<<<< HEAD
         
         fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
         
+=======
+        
+        fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
+        
+>>>>>>> parent of 5995fc6... batchnorm_1.1
 =======
         
         fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
@@ -320,6 +326,7 @@ class FullyConnectedNet(object):
         for i in range(self.num_layers-1, 0, -1):
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             if self.normalization is None:
                 d_prev, grads['W'+str(i)], grads['b'+str(i)] =\
                 affine_relu_backward(d_prev, caches[i])
@@ -329,6 +336,8 @@ class FullyConnectedNet(object):
                 grads['gamma'+str(i)], grads['beta'+str(i)] = \
                     aff_bn_relu_backward(d_prev, caches[i])
 =======
+=======
+>>>>>>> parent of 5995fc6... batchnorm_1.1
 =======
 >>>>>>> parent of 5995fc6... batchnorm_1.1
             if self.use_dropout:
@@ -347,6 +356,9 @@ class FullyConnectedNet(object):
             else:
                 d_norm = d_relu
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> parent of 5995fc6... batchnorm_1.1
+=======
 >>>>>>> parent of 5995fc6... batchnorm_1.1
 =======
 >>>>>>> parent of 5995fc6... batchnorm_1.1
