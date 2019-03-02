@@ -280,6 +280,7 @@ class FullyConnectedNet(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         
         fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
         
@@ -294,6 +295,11 @@ class FullyConnectedNet(object):
         
         fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
         
+=======
+        
+        fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
+        
+>>>>>>> parent of ba8f1d1... bn 1.0.9
         scores = fin_aff_out
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -330,6 +336,9 @@ class FullyConnectedNet(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> parent of ba8f1d1... bn 1.0.9
 =======
 >>>>>>> parent of ba8f1d1... bn 1.0.9
             if self.normalization is None:
@@ -342,10 +351,13 @@ class FullyConnectedNet(object):
                     aff_bn_relu_backward(d_prev, caches[i])
 =======
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> parent of 5995fc6... batchnorm_1.1
 =======
 >>>>>>> parent of 5995fc6... batchnorm_1.1
+=======
+>>>>>>> parent of ba8f1d1... bn 1.0.9
 =======
 >>>>>>> parent of ba8f1d1... bn 1.0.9
             if self.use_dropout:
@@ -366,10 +378,13 @@ class FullyConnectedNet(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> parent of 5995fc6... batchnorm_1.1
 =======
 >>>>>>> parent of 5995fc6... batchnorm_1.1
 =======
+=======
+>>>>>>> parent of ba8f1d1... bn 1.0.9
 =======
 >>>>>>> parent of ba8f1d1... bn 1.0.9
 >>>>>>> parent of 5995fc6... batchnorm_1.1
