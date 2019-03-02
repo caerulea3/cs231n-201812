@@ -167,7 +167,9 @@ class FullyConnectedNet(object):
 
         ############################################################################
         # TODO: Initialize the parameters of the network, storing all values in    #
-        # the self.params dictionary. Store weights and biases for the first layer #
+        # the self.params dictionary.                                              #
+        #                                                                          #
+        # Store weights and biases for the first layer                             #
         # in W1 and b1; for the second layer use W2 and b2, etc. Weights should be #
         # initialized from a normal distribution centered at 0 with standard       #
         # deviation equal to weight_scale. Biases should be initialized to zero.   #
@@ -177,6 +179,7 @@ class FullyConnectedNet(object):
         # beta2, etc. Scale parameters should be initialized to ones and shift     #
         # parameters should be initialized to zeros.                               #
         ############################################################################
+        """
         for i in range(1, self.num_layers+1):
             self.params['W'+str(i)] = \
                 np.random.normal(
@@ -191,8 +194,30 @@ class FullyConnectedNet(object):
                 np.zeros(hidden_dims[i-1] if i!=self.num_layers else num_classes)
 
             if normalization:
-                self.params['gamma'+str(i)] = 0
-                self.params['beta'+str(i)] = 0
+                self.params['gamma'+str(i)] = np.array([0])
+                self.params['beta'+str(i)] = np.array([0])
+        """
+        #parameters for deep layers
+        for i in range(1, self.num_layers):
+            #initiation ; layer #k (starting from 1)
+            #input dim : hidden_dims[k-2](input_dim if k=1) 
+            #output dim : hidden_dims[k-1]  
+            if i==1:
+                self.params["W"+str(i)] = np.random.normal(loc = 0.0, scale = weight_scale, \
+                                                   size = (input_dim, hidden_dims[i-1]))
+            else:
+                self.params["W"+str(i)] = np.random.normal(loc = 0.0, scale = weight_scale, \
+                                                   size = (hidden_dims[i-2], hidden_dims[i-1]))
+            self.params['b'+str(i)] = np.zeros(self.params['W'+str(i)].shape[1])
+            
+            if normalization:
+                self.params['gamma'+str(i)] = np.zeros_like(self.params['b'+str(i)])
+                self.params['beta'+str(i)] = np.zeros_like(self.params['b'+str(i)])
+        
+        #parameters for last layer
+            self.params['W'+str(self.num_layers)] = np.random.normal(loc = 0.0, \
+                      scale = weight_scale, size = (hidden_dims[-1], num_classes))
+            self.params['b'+str(self.num_layers)] = np.zeros(num_classes)
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -251,56 +276,29 @@ class FullyConnectedNet(object):
         # self.bn_params[1] to the forward pass for the second batch normalization #
         # layer, etc.                                                              #
         ############################################################################
+        #go through -1th layer + last affine layer
+        #first, implement loop for 1 ~ -1th layer
         prev_out = X
-        caches = {}
+        caches = [None]
         for i in range(1, self.num_layers):
-            aff_out, caches['aff'+str(i)] = \
-                affine_forward(prev_out, self.params['W'+str(i)], self.params['b'+str(i)])
-
-            if self.normalization == 'batchnorm':
-                norm_out, caches['norm'+str(i)] = batchnorm_forward(aff_out, 
-                  self.params['gamma'+str(i)], 
-                  self.params['beta'+str(i)], 
-                  self.bn_params[i-1]
-                )
-
-            elif self.normalization == 'layernorm':
-                norm_out, caches['norm'+str(i)] = layernorm_forward(aff_out, self.params['gamma'+str(i)], 
-                  self.params['beta'+str(i)], self.bn_params[i-1])
-
-            else:
-                norm_out = aff_out
-
-            relu_out, caches['relu'+str(i)] = relu_forward(norm_out)
-            prev_out = relu_out
+            if self.normalization is None:
+                out, cache = affine_relu_forward(prev_out, \
+                    self.params['W'+str(i)], self.params['b'+str(i)])
+            elif self.normalization ==  'batchnorm':
+                out, cache = aff_bn_relu_forward(prev_out, \
+                    self.params['W'+str(i)], self.params['b'+str(i)],\
+                    self.params['gamma'+str(i)], self.params['beta'+str(i)],\
+                    self.bn_params[i-1])
+            elif self.normalization == layernorm:
+                pass
             
-            if self.use_dropout:
-                drop_out, caches['drop'+str(i)] = dropout_forward(relu_out, self.dropout_param)
-                prev_out = drop_out
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
+            caches.append(cache)
+            
+            prev_out = out
         
-        fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
-        
-=======
-        
-        fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
-        
->>>>>>> parent of 5995fc6... batchnorm_1.1
-=======
-=======
->>>>>>> parent of ba8f1d1... bn 1.0.9
-        
-        fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
-        
-=======
-        
-        fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
-        
->>>>>>> parent of ba8f1d1... bn 1.0.9
-        scores = fin_aff_out
+        #last affine layer
+        scores, cache_final = affine_forward(prev_out, \
+          self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -324,82 +322,29 @@ class FullyConnectedNet(object):
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
         #compute loss
-        loss, d_fin_aff_out = softmax_loss(fin_aff_out, y)
+        loss, d_fin = softmax_loss(scores, y)
         for i in range(1, self.num_layers+1):
-            loss+= 0.5 * np.sum(self.params['W'+str(i)]**2) * self.reg
-        d_scores, grads['W'+str(self.num_layers)], grads['b'+str(self.num_layers)] =\
-            affine_backward(d_fin_aff_out, fin_cache)
-
-        d_aff = None
+            loss += self.reg * np.sum(self.params['W'+str(i)]**2) * 0.5
+        
+        #final affine layer
+        d_prev, grads['W'+str(self.num_layers)], grads['b'+str(self.num_layers)] = \
+            affine_backward(d_fin, cache_final)
+        
+        grads['W'+str(self.num_layers)] += self.params['W'+str(self.num_layers)] * self.reg
+        
+        #go backward from layer #n-1 ~ #1
         for i in range(self.num_layers-1, 0, -1):
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> parent of ba8f1d1... bn 1.0.9
-=======
->>>>>>> parent of ba8f1d1... bn 1.0.9
             if self.normalization is None:
                 d_prev, grads['W'+str(i)], grads['b'+str(i)] =\
                 affine_relu_backward(d_prev, caches[i])
                 
             elif self.normalization ==  'batchnorm':
+                """VALIDATED"""
                 d_prev, grads['W'+str(i)], grads['b'+str(i)],\
                 grads['gamma'+str(i)], grads['beta'+str(i)] = \
                     aff_bn_relu_backward(d_prev, caches[i])
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> parent of 5995fc6... batchnorm_1.1
-=======
->>>>>>> parent of 5995fc6... batchnorm_1.1
-=======
->>>>>>> parent of ba8f1d1... bn 1.0.9
-=======
->>>>>>> parent of ba8f1d1... bn 1.0.9
-            if self.use_dropout:
-                d_drop = dropout_backward(d_scores if i==self.num_layers-1 else d_aff, caches['drop'+str(i)])
-            else:
-                d_drop = d_scores if i == self.num_layers-1 else d_aff
-
-            d_relu = relu_backward(d_drop, caches['relu'+str(i)])
-
-            if self.normalization == 'batchnorm':
-                d_norm, grads['gamma'+str(i)], grads['beta'+str(i)] =\
-                  batchnorm_backward(d_relu, caches['norm'+str(i)])
-            elif self.normalization == 'layernorm':
-                d_norm, grads['gamma'+str(i)], grads['beta'+str(i)] =\
-                  layernorm_backward(d_relu, caches['norm'+str(i)])
-            else:
-                d_norm = d_relu
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> parent of 5995fc6... batchnorm_1.1
-=======
->>>>>>> parent of 5995fc6... batchnorm_1.1
-=======
-=======
->>>>>>> parent of ba8f1d1... bn 1.0.9
-=======
->>>>>>> parent of ba8f1d1... bn 1.0.9
->>>>>>> parent of 5995fc6... batchnorm_1.1
             
-            d_aff, grads['W'+str(i)], grads['b'+str(i)] = \
-              affine_backward(d_norm, caches['aff'+str(i)])
-
-            # d_aff, grads['W'+str(i)], grads['b'+str(i)] =\
-            #     affine_relu_backward(d_aff if i!=self.num_layers-1 else d_scores, 
-            #     (caches['aff'+str(i)], caches['relu'+str(i)]))
-
-        for i in range(1, self.num_layers+1):
             grads['W'+str(i)] += self.params['W'+str(i)] * self.reg
-
-
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
