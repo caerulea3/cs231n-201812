@@ -339,7 +339,6 @@ class FullyConnectedNet(object):
                 affine_relu_backward(d_prev, caches[i])
                 
             elif self.normalization ==  'batchnorm':
-                """VALIDATED"""
                 d_prev, grads['W'+str(i)], grads['b'+str(i)],\
                 grads['gamma'+str(i)], grads['beta'+str(i)] = \
                     aff_bn_relu_backward(d_prev, caches[i])
