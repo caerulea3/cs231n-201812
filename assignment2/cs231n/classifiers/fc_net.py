@@ -279,6 +279,7 @@ class FullyConnectedNet(object):
                 prev_out = drop_out
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         
         fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
         
@@ -288,10 +289,11 @@ class FullyConnectedNet(object):
         
 >>>>>>> parent of 5995fc6... batchnorm_1.1
 =======
+=======
+>>>>>>> parent of ba8f1d1... bn 1.0.9
         
         fin_aff_out, fin_cache = affine_forward(prev_out, self.params['W'+str(self.num_layers)], self.params['b'+str(self.num_layers)])
         
->>>>>>> parent of 5995fc6... batchnorm_1.1
         scores = fin_aff_out
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -327,6 +329,9 @@ class FullyConnectedNet(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> parent of ba8f1d1... bn 1.0.9
             if self.normalization is None:
                 d_prev, grads['W'+str(i)], grads['b'+str(i)] =\
                 affine_relu_backward(d_prev, caches[i])
@@ -336,10 +341,13 @@ class FullyConnectedNet(object):
                 grads['gamma'+str(i)], grads['beta'+str(i)] = \
                     aff_bn_relu_backward(d_prev, caches[i])
 =======
+<<<<<<< HEAD
 =======
 >>>>>>> parent of 5995fc6... batchnorm_1.1
 =======
 >>>>>>> parent of 5995fc6... batchnorm_1.1
+=======
+>>>>>>> parent of ba8f1d1... bn 1.0.9
             if self.use_dropout:
                 d_drop = dropout_backward(d_scores if i==self.num_layers-1 else d_aff, caches['drop'+str(i)])
             else:
@@ -357,10 +365,13 @@ class FullyConnectedNet(object):
                 d_norm = d_relu
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> parent of 5995fc6... batchnorm_1.1
 =======
 >>>>>>> parent of 5995fc6... batchnorm_1.1
 =======
+=======
+>>>>>>> parent of ba8f1d1... bn 1.0.9
 >>>>>>> parent of 5995fc6... batchnorm_1.1
             
             d_aff, grads['W'+str(i)], grads['b'+str(i)] = \
