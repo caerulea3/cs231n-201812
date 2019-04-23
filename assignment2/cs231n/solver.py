@@ -5,6 +5,7 @@ from builtins import range
 from builtins import object
 import os
 import pickle as pickle
+from tqdm import tqdm_notebook as tqdm
 
 import numpy as np
 
@@ -238,8 +239,6 @@ class Solver(object):
             X = X[mask]
             y = y[mask]
 
-        
-
         # Compute predictions in batches
         num_batches = N // batch_size
         if N % batch_size != 0:
@@ -256,7 +255,7 @@ class Solver(object):
         return acc
 
 
-    def train(self):
+    def train(self, use_tqdm=False):
         """
         Run optimization to train the model.
         """
@@ -264,7 +263,9 @@ class Solver(object):
         iterations_per_epoch = max(num_train // self.batch_size, 1)
         num_iterations = self.num_epochs * iterations_per_epoch
 
-        for t in range(num_iterations):
+        rng = tqdm(range(num_iterations)) if use_tqdm else range(num_iterations)
+
+        for t in rng:
             self._step()
 
             # Maybe print training loss

@@ -65,8 +65,9 @@ def sgd_momentum(w, dw, config=None):
     # TODO: Implement the momentum update formula. Store the updated value in #
     # the next_w variable. You should also use and update the velocity v.     #
     ###########################################################################
-    v = v * config['momentum'] - dw * config['learning_rate']
-    next_w = w + v
+    next_w = w
+    v = v * config['momentum'] - config['learning_rate'] * dw
+    next_w += v
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -80,6 +81,8 @@ def rmsprop(w, dw, config=None):
     """
     Uses the RMSProp update rule, which uses a moving average of squared
     gradient values to set adaptive per-parameter learning rates.
+    =Decay하는 Squared-Mean을 가지고(square(cache)) dw를 나누어서 사용 
+    divide by 0 방지 위해 epsilon도 사용
 
     config format:
     - learning_rate: Scalar learning rate.
@@ -100,10 +103,8 @@ def rmsprop(w, dw, config=None):
     # in the next_w variable. Don't forget to update cache value stored in    #
     # config['cache'].                                                        #
     ###########################################################################
-    config['cache'] *= config['decay_rate']
-    config['cache'] += (1-config['decay_rate']) * (dw**2)
-
-    next_w = w - config['learning_rate'] * dw / (np.sqrt(config['cache']) + config['epsilon'])
+    config['cache'] = config['decay_rate'] * config['cache'] + (1-config['decay_rate']) * dw**2
+    next_w = w - (config['learning_rate'] * dw) / np.sqrt(config['cache']+config['epsilon'])
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -115,6 +116,12 @@ def adam(w, dw, config=None):
     """
     Uses the Adam update rule, which incorporates moving averages of both the
     gradient and its square and a bias correction term.
+    
+    =위 두 가지를 합친 것. dw 대신에 moving average(v, decay_rate=b1)를 사용하고
+    =square mean(v, decay_rate=b2)도 구해서 sqrt씌워서 나누어 준다
+
+    =첫 몇 번에서는 m, v가 0에 가까운 상태로 bias에 빠져있기 때문에 
+    =iteration #(t)를 이용해서 correction
 
     config format:
     - learning_rate: Scalar learning rate.
@@ -143,17 +150,16 @@ def adam(w, dw, config=None):
     # NOTE: In order to match the reference output, please modify t _before_  #
     # using it in any calculations.                                           #
     ###########################################################################
-    config['t'] += 1 
-    t_before = config['t']
-    
-    config['m'] *= config['beta1'] 
-    config['m'] += (1-config['beta1']) * dw
-    mt = config['m'] / (1-config['beta1']**t_before )
+    config['m'] = config['m'] * config['beta1'] + (1-config['beta1']) * dw
+    config['v'] = config['v'] * config['beta2'] + (1-config['beta2']) * (dw**2)
+    config['t']+=1
+    #initial bias correction
+    # mt = config['m']
+    # vt = config['v']
+    mt = config['m'] / (1-config['beta1']**config['t'])
+    vt = config['v'] / (1-config['beta2']**config['t'])
 
-    config['v'] = config['beta2'] * config['v'] + (1-config['beta2']) * (dw**2)
-    vt = config['v'] / (1-config['beta2'] ** config['t']) 
-
-    next_w = w - config['learning_rate'] * mt / (np.sqrt(vt) + config['epsilon'])
+    next_w = w - config['learning_rate'] * mt / (np.sqrt(vt)+config['epsilon'])
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
