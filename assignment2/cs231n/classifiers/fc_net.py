@@ -240,15 +240,15 @@ class FullyConnectedNet(object):
         # self.bn_params[1] to the forward pass for the second batch normalization #
         # layer, etc.                                                              #
         ############################################################################
-        for i in range(self.num_layers-1):
-            if self.normalization is None: # {affine-relu} X (L-1)
+        if not self.use_dropout:
+            if self.normalization is None: # {affine-relu} X (L-1) - affine - softmax
                 cache, scores = self._AffRelu_Loss(X)
             elif self.normalization is "batchnorm":
                 cache, scores = self._AffBatchRelu_Loss(X)
             elif self.normalization is "layernorm":
                 cache, scores = self._AffLayerRelu_Loss(X)
-            if self.use_dropout:
-                scores, dropcache = dropout_forward(scores, self.dropout_param)
+        else:
+            pass
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -272,14 +272,9 @@ class FullyConnectedNet(object):
         # automated tests, make sure that your L2 regularization includes a factor #
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
-        try:
-            loss, dscores = softmax_loss(scores, y)
-        except:
-            print(scores, y)
-        for i in range(self.num_layers-1):
-            if self.use_dropout:
-                grads = dropout_backward(dscores, dropcache)
-            
+        
+        loss, dscores = softmax_loss(scores, y)
+        if not self.use_dropout:
             if self.normalization is None: # {affine-relu} X (L-1) - affine - softmax
                 grads, l2_loss = self._AffRelu_Backprop(dscores, cache)
                 loss += l2_loss
@@ -289,6 +284,8 @@ class FullyConnectedNet(object):
             elif self.normalization is "layernorm":
                 grads, l2_loss = self._AffLayerRelu_Backprop(dscores, cache)
                 loss += l2_loss
+        else:
+            pass
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
