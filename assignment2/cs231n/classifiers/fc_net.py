@@ -248,7 +248,12 @@ class FullyConnectedNet(object):
             elif self.normalization is "layernorm":
                 cache, scores = self._AffLayerRelu_Loss(X)
         else:
-            pass
+            if self.normalization is None: # {affine-relu} X (L-1) - affine - softmax
+                cache, scores = self._AffReluDrop_Loss(X)
+            elif self.normalization is "batchnorm":
+                cache, scores = self._AffBatchReluDrop_Loss(X)
+            elif self.normalization is "layernorm":
+                cache, scores = self._AffLayerReluDrop_Loss(X)
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -285,7 +290,15 @@ class FullyConnectedNet(object):
                 grads, l2_loss = self._AffLayerRelu_Backprop(dscores, cache)
                 loss += l2_loss
         else:
-            pass
+            if self.normalization is None: # {affine-relu} X (L-1) - affine - softmax
+                grads, l2_loss = self._AffReluDrop_Backprop(dscores, cache)
+                loss += l2_loss
+            elif self.normalization is "batchnorm":
+                grads, l2_loss = self._AffBatchReluDrop_Backprop(dscores, cache)
+                loss += l2_loss
+            elif self.normalization is "layernorm":
+                grads, l2_loss = self._AffLayerReluDrop_Backprop(dscores, cache)
+                loss += l2_loss
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -497,3 +510,206 @@ class FullyConnectedNet(object):
             grads['W{0}'.format(i)] += self.reg * self.params['W{0}'.format(i)]
 
         return grads, loss
+
+
+    """
+    Area For Dropout Layer
+    """
+
+    def _AffReluDrop_Loss(self, X):
+        """
+        loss of [{affine-relu-Drop} X (L-1) - affine] layers
+
+        Inputs:
+        - X: Array of input data of shape (N, D)
+
+        Returns:
+        - cache : cache for backprop. cache[0] is None
+        cache[i] is cache from ith layer (index starts from 1)
+        - scores : scores until those layers
+
+        """        
+        cache = [None]
+        hid = X
+        for i in range(1, self.num_layers): #hidden layers
+            hidcache = {} 
+            thisW, thisb = self.params['W{0}'.format(i)], self.params['b{0}'.format(i)]
+            # print("layer {0} : hid_out - {1}, W - {2},  b - {3}".format(i, hid.shape, thisW.shape, thisb.shape))
+            hid, hidcache['affine_relu'] = affine_relu_forward(hid, thisW, thisb)
+            hid, hidcache['drop'] = dropout_forward(hid, self.dropout_param)
+            cache.append(hidcache)
+        #last affine
+        thisW, thisb = self.params['W{0}'.format(self.num_layers)], self.params['b{0}'.format(self.num_layers)]
+        scores, hidcache = affine_forward(hid, thisW, thisb)
+        cache.append(hidcache)
+
+        return cache, scores
+
+    def _AffReluDrop_Backprop(self, dscores, cache):
+        """
+        Backpropagation of [{affine-relu} X (L-1) - affine] layers
+
+        Inputs:
+        - dscores : grad of Last layer
+        - cache : cache from loss functions
+
+        Returns:
+        - grads : dictionary of grads
+        - L2loss : L2 Regularization loss for other layers1
+        """
+        grads = {}
+        loss = None
+        #Last Softmax Layer
+        ##Add L2 Regularization loss
+        loss = 0.5 * self.reg * np.sum(self.params['W{0}'.format(self.num_layers)]**2)
+        ##Calculate grads for last Affine
+        dhid, grads['W{0}'.format(self.num_layers)], grads['b{0}'.format(self.num_layers)] =\
+            affine_backward(dscores, cache[-1])
+        grads['W{0}'.format(self.num_layers)] += self.reg * self.params['W{0}'.format(self.num_layers)]
+
+        for i in range(self.num_layers-1, 0, -1): #hidden layers
+            thiscache = cache[i]
+            ##L2 Reg. loss
+            loss += 0.5 * self.reg * np.sum(self.params['W{0}'.format(i)]**2)
+            ##Calculate grads for [{affine-relu-drop} X (L-1)]
+            dhid = dropout_backward(dhid, thiscache['drop'])
+            dhid, grads['W{0}'.format(i)], grads['b{0}'.format(i)] = \
+                affine_relu_backward(dhid, thiscache['affine_relu'])                   
+            grads['W{0}'.format(i)] += self.reg * self.params['W{0}'.format(i)]
+
+        return grads, loss
+   
+
+    def _AffBatchReluDrop_Loss(self, X):
+        """
+        loss of [{affine-Batchnorm-relu} X (L-1) - affine] layers
+
+        Inputs:
+        - X: Array of input data of shape (N, D)
+
+        Returns:
+        - cache : cache for backprop. cache[0] is None
+        cache[i] is cache Dictionary from ith layer (index starts from 1)
+        - scores : scores from these layers
+
+        """
+        cache = [None]
+        hid = X
+        for i in range(1, self.num_layers): #hidden layers
+            hidcache = {} 
+            thisW, thisb = self.params['W{0}'.format(i)], self.params['b{0}'.format(i)]
+            hid, hidcache['affine'] = affine_forward(hid, thisW, thisb)
+            thisbeta, thisgamma = self.params['beta{0}'.format(i)], self.params['gamma{0}'.format(i)]
+            hid, hidcache['batchnorm'] = batchnorm_forward(hid, thisgamma, thisbeta, self.bn_params[i-1])
+            hid, hidcache['relu'] = relu_forward(hid)
+            hid, hidcache['drop'] = dropout_forward(hid, self.dropout_param)
+            cache.append(hidcache)
+        #last affine
+        thisW, thisb = self.params['W{0}'.format(self.num_layers)], self.params['b{0}'.format(self.num_layers)]
+        scores, hidcache = affine_forward(hid, thisW, thisb)
+        cache.append(hidcache)
+        return cache, scores
+
+    def _AffBatchReluDrop_Backprop(self, dscores, cache):
+        """
+        Backpropagation of [{affine-Batchnorm-relu} X (L-1) - affine] layers
+
+        Inputs:
+        - dscores : grad of Last layer
+        - cache : cache from loss functions
+
+        Returns:
+        - grads : dictionary of grads
+        - L2loss : L2 Regularization loss for other layers1
+        """
+        grads = {}
+        loss = None
+        #Last Softmax Layer
+        ##Add L2 Regularization loss
+        loss = 0.5 * self.reg * np.sum(self.params['W{0}'.format(self.num_layers)]**2)
+        ##Calculate grads for last Affine
+        dhid, grads['W{0}'.format(self.num_layers)], grads['b{0}'.format(self.num_layers)] =\
+            affine_backward(dscores, cache[-1])
+        grads['W{0}'.format(self.num_layers)] += self.reg * self.params['W{0}'.format(self.num_layers)]
+
+        for i in range(self.num_layers-1, 0, -1): #hidden layers
+            ##L2 Reg. loss
+            loss += 0.5 * self.reg * np.sum(self.params['W{0}'.format(i)]**2)
+            ##Calculate grads for [{affine-Batchnorm-relu-drop} X (L-1)]
+            dhid = dropout_backward(dhid, cache[i]['drop'])
+            dhid = relu_backward(dhid, cache[i]['relu'])
+            dhid, grads['gamma{0}'.format(i)], grads['beta{0}'.format(i)] = \
+                batchnorm_backward_alt(dhid, cache[i]['batchnorm'])
+            dhid, grads['W{0}'.format(i)], grads['b{0}'.format(i)] = \
+                affine_backward(dhid, cache[i]['affine'])                   
+            grads['W{0}'.format(i)] += self.reg * self.params['W{0}'.format(i)]
+
+        return grads, loss
+
+
+    def _AffLayerReluDrop_Loss(self, X):
+        """
+        loss of [{affine-Layernorm-relu} X (L-1) - affine] layers
+
+        Inputs:
+        - X: Array of input data of shape (N, D)
+
+        Returns:
+        - cache : cache for backprop. cache[0] is None
+        cache[i] is cache Dictionary from ith layer (index starts from 1)
+        - scores : scores from these layers
+
+        """
+        cache = [None]
+        hid = X
+        for i in range(1, self.num_layers): #hidden layers
+            hidcache = {} 
+            thisW, thisb = self.params['W{0}'.format(i)], self.params['b{0}'.format(i)]
+            hid, hidcache['affine'] = affine_forward(hid, thisW, thisb)
+            thisbeta, thisgamma = self.params['beta{0}'.format(i)], self.params['gamma{0}'.format(i)]
+            hid, hidcache['layernorm'] = layernorm_forward(hid, thisgamma, thisbeta, self.bn_params[i-1])
+            hid, hidcache['relu'] = relu_forward(hid)
+            hid, hidcache['drop'] = dropout_forward(hid, self.dropout_param)
+            cache.append(hidcache)
+        #last affine
+        thisW, thisb = self.params['W{0}'.format(self.num_layers)], self.params['b{0}'.format(self.num_layers)]
+        scores, hidcache = affine_forward(hid, thisW, thisb)
+        cache.append(hidcache)
+        return cache, scores
+
+    def _AffLayerReluDrop_Backprop(self, dscores, cache):
+        """
+        Backpropagation of [{affine-Layernorm-relu} X (L-1) - affine] layers
+
+        Inputs:
+        - dscores : grad of Last layer
+        - cache : cache from loss functions
+
+        Returns:
+        - grads : dictionary of grads
+        - L2loss : L2 Regularization loss for other layers1
+        """
+        grads = {}
+        loss = None
+        #Last Softmax Layer
+        ##Add L2 Regularization loss
+        loss = 0.5 * self.reg * np.sum(self.params['W{0}'.format(self.num_layers)]**2)
+        ##Calculate grads for last Affine
+        dhid, grads['W{0}'.format(self.num_layers)], grads['b{0}'.format(self.num_layers)] =\
+            affine_backward(dscores, cache[-1])
+        grads['W{0}'.format(self.num_layers)] += self.reg * self.params['W{0}'.format(self.num_layers)]
+
+        for i in range(self.num_layers-1, 0, -1): #hidden layers
+            ##L2 Reg. loss
+            loss += 0.5 * self.reg * np.sum(self.params['W{0}'.format(i)]**2)
+            ##Calculate grads for [{affine-Batchnorm-relu} X (L-1)]
+            dhid = dropout_backward(dhid, cache[i]['drop'])
+            dhid = relu_backward(dhid, cache[i]['relu'])
+            dhid, grads['gamma{0}'.format(i)], grads['beta{0}'.format(i)] = \
+                layernorm_backward(dhid, cache[i]['layernorm'])
+            dhid, grads['W{0}'.format(i)], grads['b{0}'.format(i)] = \
+                affine_backward(dhid, cache[i]['affine'])                   
+            grads['W{0}'.format(i)] += self.reg * self.params['W{0}'.format(i)]
+
+        return grads, loss
+
