@@ -62,8 +62,8 @@ class ThreeLayerConvNet(object):
         stride = 2
         pool_height = 2
         pool_width = 2
-        poolH = int(1 + (H -pool_height) / stride)
-        poolW = int(1 + (W - pool_width) / stride)
+        poolH = int(1 + (convH -pool_height) / stride)
+        poolW = int(1 + (convW - pool_width) / stride)
 
         input_dimension = C * poolH * poolW
 
