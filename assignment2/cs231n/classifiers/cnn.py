@@ -65,7 +65,7 @@ class ThreeLayerConvNet(object):
         poolH = int(1 + (convH -pool_height) / stride)
         poolW = int(1 + (convW - pool_width) / stride)
 
-        input_dimension = C * poolH * poolW
+        input_dimension = filter_size * poolH * poolW
 
         self.params['W1'] = weight_scale * np.random.randn(num_filters, input_dim[0], filter_size, filter_size)
         self.params['b1'] = np.zeros(num_filters)
