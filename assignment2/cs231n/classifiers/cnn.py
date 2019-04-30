@@ -132,13 +132,16 @@ class ThreeLayerConvNet(object):
             grads['W{0}'.format(i)] += self.reg * self.params['W{0}'.format(i)]
         
         dhid, dw, db = affine_backward(dscores, cache['aff2'])
-        grads['W3'], grads['b3'] += dw, db
+        grads['W3'] += dw 
+        grads['b3'] += db
         dhid, dw, db = affine_relu_backward(dhid, cache['aff1relu'])
-        grads['W2'], grads['b2'] += dw, db
+        grads['W2'] += dw 
+        grads['b2'] += db
         dhid = max_pool_backward_fast(dhid, cache['pool'])
         dhid = relu_backward(dhid, cache['relu'])
         dx, dw, db  = conv_backward_fast(dhid, cahce['conv'])
-        grads['W1'], grads['b1'] + dw, db
+        grads['W1'] += dw 
+        grads['b1'] += db
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
