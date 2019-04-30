@@ -152,7 +152,7 @@ class ThreeLayerConvNet(object):
         grads['b2'] += db
         dhid = max_pool_backward_fast(dhid, cache['pool'])
         dhid = relu_backward(dhid, cache['relu'])
-        dx, dw, db  = conv_backward_fast(dhid, cahce['conv'])
+        dx, dw, db  = conv_backward_fast(dhid, cache['conv'])
         grads['W1'] += dw 
         grads['b1'] += db
         ############################################################################
