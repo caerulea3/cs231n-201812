@@ -60,8 +60,8 @@ class ThreeLayerConvNet(object):
         dimension = [None, input_dimension, hidden_dim, num_classes]
         for i in range(2, 4):
             #for 2/3th affine layer
-            self.params['W{0}'.format(i)] = weight_scale * np.random.randn(dimension[i], dimension[i+1])
-            self.params['b{0}'.format(i)] = np.zeros(dimension[i+1])
+            self.params['W{0}'.format(i)] = weight_scale * np.random.randn(dimension[i-1], dimension[i])
+            self.params['b{0}'.format(i)] = np.zeros(dimension[i])
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
