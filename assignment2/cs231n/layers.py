@@ -732,7 +732,7 @@ def spatial_batchnorm_forward(x, gamma, beta, bn_param):
     # vanilla version of batch normalization you implemented above.           #
     # Your implementation should be very short; ours is less than five lines. #
     ###########################################################################
-    N, C, H, W = x.shape()
+    N, C, H, W = x.shape
     newarray = np.zeros(N*H*W, C)
     for i in range(C):
       newarray[:, i] = x[:, i, :, :].reshape(N*H*W)
