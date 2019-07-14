@@ -113,7 +113,8 @@ class ThreeLayerConvNet(object):
         #conv - relu - 2x2 max pool - affine - relu - affine - softmax
         cache = {}
         if debug:
-            print(self.params)
+            for i in self.params.keys():
+                print(i, self.params[i].shape)
         scores, cache['conv'] = conv_forward_fast(X, W1, b1, conv_param)
         scores, cache['relu'] = relu_forward(scores)
         scores, cache['pool'] = max_pool_forward_fast(scores, pool_param)
