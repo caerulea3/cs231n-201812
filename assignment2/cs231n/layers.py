@@ -699,8 +699,6 @@ def max_pool_backward_naive(dout, cache):
     #                             END OF YOUR CODE                            #
     ###########################################################################
     return dx
-
-
 def spatial_batchnorm_forward(x, gamma, beta, bn_param):
     """
     Computes the forward pass for spatial batch normalization.
@@ -733,7 +731,7 @@ def spatial_batchnorm_forward(x, gamma, beta, bn_param):
     # Your implementation should be very short; ours is less than five lines. #
     ###########################################################################
     N, C, H, W = x.shape
-    newarray = np.zeros(N*H*W, C)
+    newarray = np.zeros((N*H*W, C))
     for i in range(C):
       newarray[:, i] = x[:, i, :, :].reshape(N*H*W)
 
@@ -771,13 +769,19 @@ def spatial_batchnorm_backward(dout, cache):
     # vanilla version of batch normalization you implemented above.           #
     # Your implementation should be very short; ours is less than five lines. #
     ###########################################################################
-    pass
+    N, C, H, W = dout.shape
+    newd = np.zeros((N*H*W, C))
+    for i in range(C):
+      newd[:, i] = dout[:, i, :, :].reshape(N*H*W)
+    tx, dgamma, dbeta = batchnorm_backward(newd, cache)
+    dx = np.zeros_like(dout)
+    for i in range(C):
+      dx[:, i, :, :]= tx[:, i].reshape(N,H,W)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
 
     return dx, dgamma, dbeta
-
 
 def spatial_groupnorm_forward(x, gamma, beta, G, gn_param):
     """
