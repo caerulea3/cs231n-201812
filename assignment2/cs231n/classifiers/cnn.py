@@ -83,7 +83,7 @@ class ThreeLayerConvNet(object):
             self.params[k] = v.astype(dtype)
 
 
-    def loss(self, X, y=None):
+    def loss(self, X, y=None, debug = False):
         """
         Evaluate loss and gradient for the three-layer convolutional network.
 
@@ -112,6 +112,8 @@ class ThreeLayerConvNet(object):
         ############################################################################
         #conv - relu - 2x2 max pool - affine - relu - affine - softmax
         cache = {}
+        if debug:
+            print(self.params)
         scores, cache['conv'] = conv_forward_fast(X, W1, b1, conv_param)
         scores, cache['relu'] = relu_forward(scores)
         scores, cache['pool'] = max_pool_forward_fast(scores, pool_param)
