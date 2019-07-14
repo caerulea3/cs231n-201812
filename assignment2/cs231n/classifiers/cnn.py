@@ -116,10 +116,20 @@ class ThreeLayerConvNet(object):
             for i in self.params.keys():
                 print(i, self.params[i].shape)
         scores, cache['conv'] = conv_forward_fast(X, W1, b1, conv_param)
+        if debug:
+            print('score_Conv : ', scores.shape)
         scores, cache['relu'] = relu_forward(scores)
+        if debug:
+            print('score_Relu : ', scores.shape)
         scores, cache['pool'] = max_pool_forward_fast(scores, pool_param)
+        if debug:
+            print('score_PoolI : ', scores.shape)
         scores, cache['aff1relu'] = affine_relu_forward(scores, W2, b2)
+        if debug:
+            print('score_AffIRelu : ', scores.shape)
         scores, cache['aff2'] = affine_forward(scores, W3, b3)
+        if debug:
+            print('score_AffII : ', scores.shape)
 
         ############################################################################
         #                             END OF YOUR CODE                             #
