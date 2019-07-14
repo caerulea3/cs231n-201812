@@ -59,7 +59,7 @@ class ThreeLayerConvNet(object):
         convH = int( 1 + (H + 2 * pad - filter_size))
         convW = int( 1 + (W + 2 * pad - filter_size))
         if debug:
-            print(pad, convH, convW)
+            print(pad, filter_size, convH, convW)
         #Pool Layer Size
         stride = 2
         pool_height = 2
