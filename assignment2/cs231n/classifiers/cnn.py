@@ -19,7 +19,7 @@ class ThreeLayerConvNet(object):
 
     def __init__(self, input_dim=(3, 32, 32), num_filters=32, filter_size=7,
                  hidden_dim=100, num_classes=10, weight_scale=1e-3, reg=0.0,
-                 dtype=np.float32):
+                 dtype=np.float32, debug=False):
         """
         Initialize a new network.
 
@@ -58,12 +58,16 @@ class ThreeLayerConvNet(object):
         pad =  (filter_size - 1) // 2
         convH = int( 1 + (H + 2 * pad - filter_size))
         convW = int( 1 + (W + 2 * pad - filter_size))
+        if debug:
+            print(pad, convH, convW)
         #Pool Layer Size
         stride = 2
         pool_height = 2
         pool_width = 2
         poolH = int(1 + (convH -pool_height) / stride)
         poolW = int(1 + (convW - pool_width) / stride)
+        if debug:
+            print(poolH, poolW)
 
         input_dimension = filter_size * poolH * poolW
 
@@ -71,6 +75,8 @@ class ThreeLayerConvNet(object):
         self.params['b1'] = np.zeros(num_filters)
 
         dimension = [None, input_dimension, hidden_dim, num_classes]
+        if debug:
+            print(dimension)
         for i in range(2, 4):
             #for 2/3th affine layer
             self.params['W{0}'.format(i)] = weight_scale * np.random.randn(dimension[i-1], dimension[i])
